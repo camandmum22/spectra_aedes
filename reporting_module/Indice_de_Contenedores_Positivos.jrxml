@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Indice de Recipientes" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="94e1d849-7d0a-4c2e-8e8e-16aee2573fe8">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="Ano" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Año]]></parameterDescription>
+		<defaultValueExpression><![CDATA[2008]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Mes" class="java.lang.String">
+		<parameterDescription><![CDATA[Mes (en 2 caracteres)]]></parameterDescription>
+		<defaultValueExpression><![CDATA[12]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+     contenedorespositivosapredios2."Ano",
+     contenedorespositivosapredios2."Mes",
+     contenedorespositivosapredios2."Mes_num",
+     contenedorespositivosapredios2.comuna,
+     contenedorespositivosapredios2."ContenedoresLarvasPupas",
+     contenedorespositivosapredios2."TotalContenedoresComuna",
+     contenedorespositivosapredios2."Porcentaje"
+FROM
+     contenedorespositivosapredios2
+WHERE contenedorespositivosapredios2."Ano"=$P{Ano} and contenedorespositivosapredios2."Mes_num"=$P{Mes}
+ORDER BY
+    contenedorespositivosapredios2."Ano",
+    contenedorespositivosapredios2."Mes_num",
+    contenedorespositivosapredios2.comuna]]>
+	</queryString>
+	<field name="Ano" class="java.lang.Integer"/>
+	<field name="Mes" class="java.lang.String"/>
+	<field name="Mes_num" class="java.lang.String"/>
+	<field name="comuna" class="java.lang.String"/>
+	<field name="ContenedoresLarvasPupas" class="java.lang.Long"/>
+	<field name="TotalContenedoresComuna" class="java.lang.Long"/>
+	<field name="Porcentaje" class="java.math.BigDecimal"/>
+	<variable name="Indicador" class="java.math.BigDecimal" resetType="Group" resetGroup="Mes" calculation="Highest">
+		<variableExpression><![CDATA[$F{Porcentaje}]]></variableExpression>
+	</variable>
+	<variable name="IndicadorCasas_SUM" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{Porcentaje}]]></variableExpression>
+	</variable>
+	<variable name="IndicadorCasas_SUM_1" class="java.math.BigDecimal" resetType="Column" calculation="Sum">
+		<variableExpression><![CDATA[$F{Porcentaje}]]></variableExpression>
+	</variable>
+	<group name="Mes">
+		<groupExpression><![CDATA[$F{Mes}]]></groupExpression>
+		<groupHeader>
+			<band height="296">
+				<bar3DChart>
+					<chart isShowLegend="true" evaluationTime="Group" evaluationGroup="Mes">
+						<reportElement x="18" y="36" width="512" height="212" uuid="59ad4576-5799-47ef-8952-1dc7988640f4"/>
+						<chartTitle/>
+						<chartSubtitle/>
+						<chartLegend/>
+					</chart>
+					<categoryDataset>
+						<dataset resetType="Group" resetGroup="Mes"/>
+						<categorySeries>
+							<seriesExpression><![CDATA[$F{comuna}]]></seriesExpression>
+							<categoryExpression><![CDATA["COMUNA"]]></categoryExpression>
+							<valueExpression><![CDATA[$F{Porcentaje}]]></valueExpression>
+						</categorySeries>
+					</categoryDataset>
+					<bar3DPlot isShowLabels="true">
+						<plot/>
+						<itemLabel/>
+						<categoryAxisFormat>
+							<axisFormat/>
+						</categoryAxisFormat>
+						<valueAxisFormat>
+							<axisFormat/>
+						</valueAxisFormat>
+						<rangeAxisMaxValueExpression><![CDATA[($V{Indicador}.intValue()+0.05)]]></rangeAxisMaxValueExpression>
+					</bar3DPlot>
+				</bar3DChart>
+				<staticText>
+					<reportElement x="52" y="263" width="100" height="20" uuid="6903f298-97cb-46f4-aeec-24f5ec654af2"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[COMUNA]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="176" y="257" width="100" height="33" uuid="c47a9600-e52b-4ce4-9b16-77e01f697e2f"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[PREDIOS POSITIVOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="296" y="259" width="100" height="31" uuid="aa17a2d6-6d87-4749-b8f9-2b97fd3758f9"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[PREDIOS EVALUADOS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="414" y="263" width="100" height="20" uuid="4f7e6018-2eee-4ee7-b340-516adbc1a694"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<text><![CDATA[ÍNDICE]]></text>
+				</staticText>
+				<textField pattern="###0">
+					<reportElement x="55" y="5" width="32" height="20" uuid="04dd3b9a-bdae-4d72-9bea-8968bdb1fb09"/>
+					<textFieldExpression><![CDATA[$F{Ano}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="21" y="5" width="30" height="20" uuid="9acf9d63-7116-46d0-a9c5-0462f2e28f5f"/>
+					<text><![CDATA[AÑO:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="218" y="5" width="100" height="20" uuid="c644813f-8dc2-4930-ae91-ee6491c8f2f2"/>
+					<textFieldExpression><![CDATA[$F{Mes}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="187" y="5" width="28" height="20" uuid="84c11bf0-3360-4267-9e4f-8b46dd464c14"/>
+					<text><![CDATA[MES:]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="11" splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="138" splitType="Stretch">
+			<staticText>
+				<reportElement x="20" y="116" width="505" height="20" uuid="e71278b7-8d78-412c-8832-51c2d0e62694"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[Indice de Contenedores Positivos = ( Predios con contenedores positivos / Predios Explorados ) * 100]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="117" y="93" width="319" height="20" uuid="67a749e0-ab25-40c6-8e74-b3697c67e2eb"/>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Indice de Contenedores Positivos]]></text>
+			</staticText>
+			<image hAlign="Center">
+				<reportElement x="233" y="4" width="70" height="58" uuid="0a71e033-9dc2-43b6-9354-734b89661e30"/>
+				<imageExpression><![CDATA["public/images/cideim_sobre.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="122" y="63" width="314" height="26" uuid="add6b480-8b80-4434-ab99-6d3c4f782db3"/>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ÍNDICES ENTOMOLÓGICOS]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="16" splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="27">
+			<textField>
+				<reportElement x="446" y="5" width="23" height="20" uuid="f65d3cb5-487b-4067-8b41-0c2bfac2e8bb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{Porcentaje}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="52" y="5" width="100" height="20" uuid="2e846c1e-c264-4905-9893-fad44167c71d"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{comuna}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="296" y="5" width="100" height="20" uuid="b14915d5-f479-4fb4-846d-e23ec06f47a4"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{TotalContenedoresComuna}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="176" y="5" width="100" height="20" uuid="8cb06bd3-a92f-4d82-9809-ea489da1f42e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{ContenedoresLarvasPupas}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="470" y="5" width="13" height="20" uuid="bb3cfd79-e8e0-476e-a99d-ce282f29e537"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[%]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="28" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="17" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="11" splitType="Stretch"/>
+	</summary>
+	<noData>
+		<band height="14"/>
+	</noData>
+</jasperReport>

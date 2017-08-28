@@ -1,0 +1,286 @@
+#{extends 'main.html' /}
+
+#{set title:'Reportes' /}
+
+#{set 'moreStyles'}
+<link rel="stylesheet" media="screen" href="@{'/public/stylesheets/estilo.css'}">
+<link rel="stylesheet" media="screen" href="@{'/public/stylesheets/bootstrap.css'}">
+<style type="text/css">
+    #barra {
+        padding-left: 15px;
+        padding-right: 15px
+    }
+
+    #panel_especial {
+        height: 740px;
+        width: 800px
+    }
+</style>
+#{/set}
+
+#{set 'moreScripts'}
+
+<script type="text/javascript" src="@{'/public/javascripts/MM.js'}"></script>
+
+<script type="text/javascript">
+    MONTHS = {
+        "01" : "Enero",
+        "02" : "Febrero",
+        "03" : "Marzo",
+        "04" : "Abril",
+        "05" : "Mayo",
+        "06" : "Junio",
+        "07" : "Julio",
+        "08" : "Agosto",
+        "09" : "Septiembre",
+        "10" : "Octubre",
+        "11" : "Noviembre",
+        "12" : "Diciembre"
+    };
+
+    REPORT = {
+        name:"",
+        type:"html",
+        year:0,
+        month:1,
+        dates:[],
+        entidad_salud_local:"${usuario?.entidadSaludLocal?.id}"
+    };
+
+    function init() {
+        $('#report_format').change(function () {
+            REPORT.type = $(this).val();
+            reloadReport();
+        });
+
+        $('#entidad_salud_regional').change(function () {
+            $('#entidad_salud_local').empty();
+            llenarEntidadesSaludLocales($(this).val());
+        });
+
+        $('#entidad_salud_local').change(function () {
+            REPORT.entidad_salud_local = $(this).val();
+            $('#year').empty();
+            $('#month').empty();
+        });
+
+        $('#year').change(function () {
+            REPORT.year = REPORT.dates[$(this).val()].year;
+            reloadMonths($(this).val());
+        });
+
+
+        $('#month').change(function () {
+            REPORT.month = $(this).val();
+            reloadReport();
+        });
+
+        reloadYears();
+
+        llenarEntidadesSaludRegionales();
+
+        $('#campo_barrio').change(function () {
+            filtrarRegistros(0);
+        });
+
+        $('#campo_comuna').change(function () {
+            filtrarRegistros(1);
+        });
+    }
+
+    function llenarEntidadesSaludRegionales() {
+        $.getJSON("@{Reportes.listaEntidadesSalud()}", function (data) {
+            $.each(data, function (i, item) {
+                if (item.id == '${usuario?.entidadSaludRegional?.id}') {
+                    $('#entidad_salud_regional').append(new Option(item.nombre, item.id, false, true));
+                    llenarEntidadesSaludLocales(${usuario?.entidadSaludRegional?.id});
+                } else {
+                    $('#entidad_salud_regional').append(new Option(item.nombre, item.id, false, false));
+                }
+            });
+        });
+    }
+
+    function llenarEntidadesSaludLocales(entidadSaludRegional) {
+
+        $.getJSON("/reportes/listaentidadessalud?entidadSaludRegional=" + entidadSaludRegional, function (data) {
+            $.each(data, function (i, item) {
+                if (i == 0) {
+                    REPORT.entidad_salud_local = item.id;
+                }
+                if (item.id == '${usuario?.entidadSaludLocal?.id}') {
+                    $('#entidad_salud_local').append(new Option(item.nombre, item.id, false, true));
+                    REPORT.entidad_salud_local = item.id;
+                } else {
+                    $('#entidad_salud_local').append(new Option(item.nombre, item.id, false, false));
+
+                }
+
+            });
+        });
+    }
+
+    function setReportName(reportName) {
+        REPORT.name = reportName;
+        reloadReport();
+    }
+
+    function reloadYears() {
+        $.getJSON("/reportes/fechasreporte?entidadSaludLocal=${usuario?.entidadSaludLocal?.id}", function (data) {
+            REPORT.dates = data;
+            $('#year').empty();
+            $.each(data, function (i, item) {
+                if(i == 0) {
+                    REPORT.year = REPORT.dates[0].year;
+                }
+                $('#year').append(new Option(item.year, i, false, false));
+            });
+            reloadMonths(0);
+        });
+    }
+
+    function reloadMonths(selectedYear) {
+        $('#month').empty();
+        $.each(REPORT.dates[selectedYear].months, function (i, item) {
+            if(i == 0) {
+                REPORT.month = item;
+            }
+            $('#month').append(new Option(MONTHS[item], item, false, false));
+        });
+    }
+
+    function reloadReport() {
+        if (REPORT.name != "") {
+            document.getElementById('reportFrame').src = "/report." + REPORT.type +
+                "?year=" + REPORT.year + "&month=" + REPORT.month +
+                "&name=" + REPORT.name + "&entsal=" + REPORT.entidad_salud_local;
+        }
+    }
+
+    function filtrarRegistros(tipo) {
+       
+        if (tipo == 1) { //Comuna
+            var comunaSeleccionada = $("#campo_comuna option:selected").val();
+           
+
+        } else { // Barrio
+            var barrioSeleccionado = $("#campo_barrio option:selected").val();
+           
+           
+        }
+    }
+
+</script>
+#{/set}
+
+<!-- header -->
+    #{header /}
+<!-- fin header -->
+
+    <!-- panel reportes -->
+    <div id="panel_especial">
+    #{if useFlash }
+
+    #{/if}
+    #{else}
+        <iframe id="reportFrame" width="100%" height="100%" scrolling="auto" frameborder="0" src=""></iframe>
+    #{/else}
+    </div>
+    <!-- fin panel reportes -->
+
+    <div id="barra">
+        <div class="filtro">
+            <h3>Reportes</h3>
+        </div>
+        <ul>
+            <li><a href="javascript:setReportName('Indice_de_Breteau')">Índice de Breteau</a></li>
+            <li><a href="javascript:setReportName('Indice_de_Casas_Positivas')">Índice de Casas Positivas</a></li>
+            <li><a href="javascript:setReportName('Indice_de_Pupas')">Índice de Pupas</a></li>
+            <li><a href="javascript:setReportName('Indice_de_Recipientes')">Índice de Recipientes</a></li>
+            <li><a href="javascript:setReportName('Tipos_Criadero')">Tipos de Criadero</a></li>
+            <li><a href="javascript:setReportName('Indice_de_Contenedores_Positivos')">Índice de Contenedores Positivos</a></li> <!-- new add -->
+        </ul>
+
+        <div class="filtro">
+            <h3>Filtrar por:</h3>
+        </div>
+
+        <div class="parametro">
+            <p>Entidad Salud Regional</p>
+        #{ifnot chooseRegionAccess}
+
+            <select name="entidad_salud_regional" size="1" class="input-block-level" id="entidad_salud_regional"
+                    title="Entidad Salud Regional">
+                <option value="">(Ninguna)</option>
+            </select>
+        #{/ifnot}
+        #{else }
+            <p>${usuario?.entidadSaludLocal?.entidadSaludRegional?.nombre}</p>
+        #{/else}
+
+            <br />
+
+            <p>Entidad Salud Local</p>
+        #{ifnot chooseLocalAccess}
+            <select name="entidad_salud_local" size="1" class="input-block-level" id="entidad_salud_local"
+                    title="Entidad Salud Local">
+                <option value="">(Ninguna)</option>
+            </select>
+        #{/ifnot}
+        #{else }
+            <p>${usuario?.entidadSaludLocal?.nombre}</p>
+        #{/else}
+
+         <!------------------------------------------>
+    <div class="parametro">
+        <p>Comuna</p>
+        <select name="Comuna" size="1" class="input-small" id="campo_comuna"  title="Comuna">
+            <option selected="selected" value="all">- Todas</option>
+        </select>
+    </div>
+
+    <div class="vm_separador"></div>
+
+    <div class="parametro">
+        <p>Barrio</p>
+        <select name="Barrio" size="1" class="input-small"  id="campo_barrio" title="Barrio">
+            <option selected="selected" value="all">- Todos</option>
+        </select> 
+    </div>
+    </div>
+    <br />
+<!------------------------------------------>
+
+        <div class="parametro">
+
+            <label for="year">Año</label>
+            <select name="year" size="1" class="input-small" id="year">
+                <option value="0">(Año)</option>
+            </select>
+        </div>
+
+        <div class="vm_separador"></div>
+
+        <div class="parametro">
+            <label for="month">Mes</label>
+            <select name="month" size="1" class="input-small" id="month">
+                <option value="0">(Mes)</option>
+            </select>
+        </div>
+
+        <div class="vm_separador"></div>
+
+        <div class="parametro">
+            <label for="report_format">Formato</label>
+            <select class="input-small" name="Formato" size="1" id="report_format" title="Formato">
+                <option selected="selected" value="html">HTML</option>
+                <option  value="pdf">PDF</option>
+                <option value="xls">Excel</option>
+                <option value="swf">Flash</option>
+            </select>
+        </div>
+    </div>
+
+<!-- footer -->
+    #{footer /}
+<!-- footer -->
